@@ -13,21 +13,21 @@ import com.bdefender.towers.controllers.EnemyControllerZoneImpl;
 public class TowerFactory {
 	
 	public TowerBase getTowerZone1(final EnemiesPoolInteractor pool, final Pair<Double, Double> pos) {
-		return this.towerZoneByParams(3.0, 5.0, 15.0, 2l, pool, pos);
+		return this.towerZoneByParams(3.0, 5.0, 15.0, 2L, pool, pos);
 	}
 	
 	public TowerBase getTowerZone2(final EnemiesPoolInteractor pool, final Pair<Double, Double> pos) {
-		return this.towerZoneByParams(5.0, 4.0, 10.0, 3l, pool, pos);
+		return this.towerZoneByParams(5.0, 4.0, 10.0, 3L, pool, pos);
 	}
 	
 	public TowerBase getTowerDirect1(final EnemiesPoolInteractor pool, final Pair<Double, Double> pos) {
-		return this.towerDirectByParams(15.0, 15.0, 1l, pool, pos);
+		return this.towerDirectByParams(15.0, 15.0, 1L, pool, pos);
 	}
 	
 	private TowerBase towerZoneByParams(Double damage, Double damageAreaRadius, Double rangeRadius, Long shootSpeed, EnemiesPoolInteractor pool, Pair<Double, Double> pos) {
 		return new TowerBase() {
 
-			EnemyControllerZone enemiesCtrl = new EnemyControllerZoneImpl(pool);
+			final EnemyControllerZone enemiesCtrl = new EnemyControllerZoneImpl(pool);
 			
 			@Override
 			public Set<Integer> shoot() {

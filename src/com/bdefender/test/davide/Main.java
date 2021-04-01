@@ -5,6 +5,7 @@ import com.bdefender.enemies.EnemyBase;
 import com.bdefender.enemies.EnemyFactory;
 import com.bdefender.enemies.pool.EnemiesPoolImpl;
 import com.bdefender.enemies.pool.EnemiesPoolMover;
+import com.bdefender.enemies.view.EnemiesViewLoader;
 import com.bdefender.map.Coordinates;
 import com.bdefender.map.Map;
 import com.bdefender.map.MapInteractorImpl;
@@ -21,9 +22,9 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.stage.Stage;
-
-import java.io.FileInputStream;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class Main extends Application {
 
@@ -42,7 +43,7 @@ public class Main extends Application {
 		EnemyFactory eFactory = new EnemyFactory();
 
 		pool.addEnemy(eFactory.getEnemy1(pool.getSpawnPoint()));
-		//pool.addEnemy(eFactory.getEnemy2(pool.getSpawnPoint()));
+		pool.addEnemy(eFactory.getEnemy2(pool.getSpawnPoint()));
 
 		TowerFactory tFactory = new TowerFactory();
 		TowerBase tz1 = tFactory.getTowerZone1(pool, new Pair<>(5.0,5.0));
@@ -67,26 +68,21 @@ public class Main extends Application {
 		for (int i = 0; i < map.getPath().size(); i++) {
 			path.getElements().add(new LineTo(map.getPath().get(i).getLeftPixel(), map.getPath().get(i).getTopPixel()));
 		}
-		EnemyBase enemy = pool.getEnemies().get(0);
-		Image enemyImage = new Image(new FileInputStream(String.format("res/enemies/%d/enemy.png",enemy.getTypeId())), 100, 100,false, false);
 		root.getChildren().addAll(map, path, canvas);
 		primaryStage.setResizable(true);
 		Scene scene = new Scene(root);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-
-		EnemyViewThread eViewThread = new EnemyViewThread(enemy,enemyImage,gc);
+		EnemyViewThread eViewThread = new EnemyViewThread(pool.getEnemies(),gc);
 		eViewThread.start();
 	}
 
 	static class EnemyViewThread extends Thread {
-	 	private final EnemyBase enemy;
-	 	private Image image;
+	 	private List<EnemyBase> enemies;
 	 	private GraphicsContext gc;
 
-	 	public EnemyViewThread(EnemyBase enemy, Image image, GraphicsContext gc){
-			this.enemy = enemy;
-			this.image = image;
+	 	public EnemyViewThread(List<EnemyBase> enemies, GraphicsContext gc){
+			this.enemies = enemies;
 			this.gc = gc;
 		}
 
@@ -96,9 +92,15 @@ public class Main extends Application {
 	 		while (true){
 				try {
 					sleep(10L);
-					Coordinates enemyPos = new Coordinates(enemy.getPosition().getX() - 2, enemy.getPosition().getY() - 2);
+					HashMap<EnemyBase, Optional<Image>> enemiesImage = EnemiesViewLoader.GetEnemiesImages(enemies);
 					gc.clearRect(0, 0, 1280,1280);
-					gc.drawImage(image,enemyPos.getCenterPixelX(), enemyPos.getCenterPixelY());
+					for(EnemyBase enemy : enemies){
+						Coordinates enemyPos = new Coordinates(enemy.getPosition().getX() - 2, enemy.getPosition().getY() - 2);
+						if(enemiesImage.get(enemy).isPresent()) {
+							gc.drawImage(enemiesImage.get(enemy).get(), enemyPos.getCenterPixelX(), enemyPos.getCenterPixelY());
+						}
+					}
+
 				} catch (InterruptedException ex) {
 					System.out.println(ex.getMessage());
 				}
